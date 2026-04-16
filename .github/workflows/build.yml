@@ -1,0 +1,37 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install pdfplumber openpyxl pyinstaller
+
+      - name: Build EXE
+        run: |
+          pyinstaller --onefile --name ca_po_to_excel --collect-all pdfplumber --collect-all pdfminer --collect-all pypdfium2 ca_po_to_excel.py
+
+      - name: Upload EXE as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ca_po_to_excel_windows
+          path: dist\ca_po_to_excel.exe
+          retention-days: 30
